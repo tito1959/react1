@@ -1,11 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { List } from "./List.js";
 
+/**
+ * UseEffect ejecuta una funcion caada vez que se reenderiza un componente
+ * 1. Fetch && Axios
+ * 2. UseEffect
+ * 3. Alterar Datos del servidor
+ */
 
 export const Note = (props) => {
 
-	const [notes, setNotes] = useState(props.notes);
+	const [notes, setNotes] = useState([]);
 	const [newNote, setNewNote] = useState("");
+
+	// Use effect se ejecutara cada vez que reenderiza componente, para evitar que se ejecute en multiples reenderings, usamos []
+	useEffect(() => {
+		fetch("https://jsonplaceholder.typicode.com/posts")
+			.then(response => response.json())
+			.then(json => setNotes(json));
+	}, []) // se ejecutara dependiendo de los parametros puestos.
 
 	const handleChange = (e) => {
 		setNewNote(e.target.value);
@@ -14,19 +27,28 @@ export const Note = (props) => {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
-		console.log("creando nota...");
 		const noteToAddState = {
-			id: notes.lenght + 1,
 			title: newNote,
-			body: newNote
-		}
+			body: newNote,
+			userId: 1
+		};
 
-		setNotes((prevNote) => prevNote.concat(noteToAddState));
+		fetch('https://jsonplaceholder.typicode.com/posts', {
+			method: 'POST',
+			body: JSON.stringify(noteToAddState),
+			headers: {
+				'Content-type': 'application/json; charset=UTF-8',
+			},
+		})
+			.then((response) => response.json())
+			.then((json) => setNotes((prevNotes) => prevNotes.concat(json)));
+
 	}
 
 	return (
 		<div>
-			<h1>Notes: </h1>
+			<h1>NOTES: </h1>
+			<hr />
 			<div>
 				<ul>
 					{notes.map((note) => <List key={note.id} {...note} />)}
