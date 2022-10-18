@@ -1,23 +1,18 @@
-import logo from './logo.svg';
 import './App.css';
+import { Note } from './components/Note';
+
+const notes = [
+  {
+    id: 1,
+    title: "Nota 1",
+    body: "Test Nota 1 hacia el componente List..."
+  }
+]
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Note notes={notes} />
     </div>
   );
 }
