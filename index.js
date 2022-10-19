@@ -1,4 +1,5 @@
-const express = require('express')
+const express = require("express");
+const cors = require('cors')
 
 let notes = [
 	{
@@ -42,40 +43,40 @@ let notes = [
 
 // ejecutamos la app:
 const app = express();
-app.use(express.json())
+app.use(express.json());
 
 // Peticiones HTTP:
-app.get('/', (request, response) => {
-	response.send('<h1>Hello World From Express.js</h1>');
+app.get("/", (request, response) => {
+	response.send("<h1>Hello World From Express.js</h1>");
 });
 
 // Get All
-app.get('/api/notes', (request, response) => {
+app.get("/api/notes", (request, response) => {
 	response.json(notes);
-})
+});
 
 // Get ById
-app.get('/api/notes/:id', (request, response) => {
+app.get("/api/notes/:id", (request, response) => {
 	const id = parseInt(request.params.id);
 	const note = notes.find(note => note.id === id);
 
 	if (note) {
 		response.json(note);
 	} else {
-		response.send('<h1>Elemento no encontrado</h1>');
+		response.send("<h1>Elemento no encontrado</h1>");
 		// response.status(303).end();
 	}
 });
 
 // Delete
-app.delete('/api/notes/:id', (request, response) => {
+app.delete("/api/notes/:id", (request, response) => {
 	const id = Number(request.params.id);
 	notes = notes.filter(note => note.id !== id);
 	response.status(204).end();
 });
 
 // POST (crear recurso)
-app.post('/api/notes', (request, response) => {
+app.post("/api/notes", (request, response) => {
 
 	// JsonParse para las solicitudes 
 	const note = request.body;
@@ -86,11 +87,11 @@ app.post('/api/notes', (request, response) => {
 	const newNote = {
 		id: maxId + 1,
 		content: note.content,
-		important: typeof note.important !== 'undefined' ? note.important : false,
+		important: typeof note.important !== "undefined" ? note.important : false,
 		date: new Date().toISOString()
-	}
+	};
 
-	notes = [...notes, newNote]
+	notes = [...notes, newNote];
 	response.json(newNote);
 });
 

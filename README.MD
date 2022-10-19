@@ -15,3 +15,13 @@ En package.json tenemos una seccion de versiones, que contienen semantic version
 
 Es una herramienta de desarrollo que permite detectar y estructurar nuestra sintaxis en proyectos.
 Para instalarlo usamos: npm install eslint -D
+
+npm init @eslint/config'.
+
+## MiddleWare
+
+es una función que intercepta una petición
+
+## CORS
+
+Es una dependencia de produccion se instala: npm install cors express
