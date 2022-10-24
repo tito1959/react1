@@ -1,103 +1,113 @@
+/**
+ * Conectando la api a MongoDb y testeando las request, aplicando eslint y package.json
+ * importante el orden de los middleware
+ */
+
+require('dotenv').config(); // manejador de .env
+require('./Model/Connection');
+
+const Note = require("./Model/Note");
 const express = require("express");
-const cors = require('cors')
+const cors = require('cors');
+const app = express();
 
-let notes = [
-	{
-		"userId": 1,
-		"id": 1,
-		"title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-		"body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
-	},
-	{
-		"userId": 1,
-		"id": 2,
-		"title": "qui est esse",
-		"body": "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla"
-	},
-	{
-		"userId": 1,
-		"id": 3,
-		"title": "ea molestias quasi exercitationem repellat qui ipsa sit aut",
-		"body": "et iusto sed quo iure\nvoluptatem occaecati omnis eligendi aut ad\nvoluptatem doloribus vel accusantium quis pariatur\nmolestiae porro eius odio et labore et velit aut"
-	},
-	{
-		"userId": 1,
-		"id": 4,
-		"title": "eum et est occaecati",
-		"body": "ullam et saepe reiciendis voluptatem adipisci\nsit amet autem assumenda provident rerum culpa\nquis hic commodi nesciunt rem tenetur doloremque ipsam iure\nquis sunt voluptatem rerum illo velit"
-	},
-	{
-		"userId": 1,
-		"id": 5,
-		"title": "nesciunt quas odio",
-		"body": "repudiandae veniam quaerat sunt sed\nalias aut fugiat sit autem sed est\nvoluptatem omnis possimus esse voluptatibus quis\nest aut tenetur dolor neque"
-	},
-	{
-		"userId": 1,
-		"id": 6,
-		"title": "dolorem eum magni eos aperiam quia",
-		"body": "ut aspernatur corporis harum nihil quis provident sequi\nmollitia nobis aliquid molestiae\nperspiciatis et ea nemo ab reprehenderit accusantium quas\nvoluptate dolores velit et doloremque molestiae"
-	}
-
-];
+let notes = [];
 
 // ejecutamos la app:
-const app = express();
 app.use(express.json());
+app.use(cors())
 
 // Peticiones HTTP:
 app.get("/", (request, response) => {
 	response.send("<h1>Hello World From Express.js</h1>");
 });
 
-// Get All
-app.get("/api/notes", (request, response) => {
-	response.json(notes);
+// Get All -Note.find las llaves indican que devuelva todos los datos.
+app.get("/api/notes", async (request, response) => {
+	const notes = await Note.find({})
+	response.json(notes)
 });
 
 // Get ById
-app.get("/api/notes/:id", (request, response) => {
-	const id = parseInt(request.params.id);
-	const note = notes.find(note => note.id === id);
+app.get("/api/notes/:id", (request, response, next) => {
+	const id = request.params.id;
 
-	if (note) {
-		response.json(note);
-	} else {
-		response.send("<h1>Elemento no encontrado</h1>");
-		// response.status(303).end();
-	}
+	Note.findById(id).then(note => {
+		note ? response.json(note) : response.status(404).end()
+	}).catch(err => {
+		next(err);
+	})
 });
 
 // Delete
-app.delete("/api/notes/:id", (request, response) => {
-	const id = Number(request.params.id);
-	notes = notes.filter(note => note.id !== id);
-	response.status(204).end();
+app.delete("/api/notes/:id", (request, response, next) => {
+	const id = request.params.id;
+
+	Note.findByIdAndDelete(id).then(result => {
+		response.status(204).end();
+	}).catch(error => next(error));
 });
 
 // POST (crear recurso)
-app.post("/api/notes", (request, response) => {
-
+app.post("/api/notes", async (request, response) => {
 	// JsonParse para las solicitudes 
 	const note = request.body;
 
-	const ids = notes.map(note => note.id);
-	const maxId = Math.max(...ids);
+	if (!note.content) { return response.status(400).json({ error: 'required "content" field is missing' }) }
 
-	const newNote = {
-		id: maxId + 1,
+	const newNote = new Note({
 		content: note.content,
+		date: new Date().toISOString(),
 		important: typeof note.important !== "undefined" ? note.important : false,
-		date: new Date().toISOString()
-	};
+	});
 
-	notes = [...notes, newNote];
-	response.json(newNote);
+	try {
+		const savedNote = await newNote.save();
+		response.json(savedNote);
+	} catch (error) {
+		next(error);
+	}
+
+	// newNote.save().then(saveNote => {
+	// response.json(saveNote)
+	// });
 });
+
+app.put("/api/notes/:id", (request, response) => {
+	const { id } = request.params;
+	const note = request.body;
+
+	const newNoteInfo = {
+		content: note.content,
+		important: note.important
+	}
+
+	Note.findByIdAndUpdate(id, newNoteInfo).then(result => {
+		response.json(result)
+	})
+})
+
+// middleware para error 404
+app.use((request, response, next) => {
+	response.status(404).end();
+})
+
+// middleware para capturar error de post
+app.use((error, request, response, next) => {
+	console.log(error);
+	console.log(error.name);
+
+	if (error.name === "CastError") {
+		response.status(400).send("Error, id is malformed")
+	} else {
+		response.status(500).end()
+	}
+})
 
 /**
  * Propiedades del servidor:
  */
+const PORT = process.env.PORT;
+const server = app.listen(PORT, () => console.log(`Server running in port: ${PORT}`));
 
-const PORT = 3001;
-app.listen(PORT, () => console.log(`Server running in port: ${PORT}`));
+module.exports = { app, server };
