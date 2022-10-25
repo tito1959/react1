@@ -7,9 +7,9 @@
 const mongoose = require('mongoose');
 
 const { MONGO_DB_URI, MONGO_DB_URI_TEST, NODE_ENV } = process.env;
-const connection = NODE_ENV === "test" ? MONGO_DB_URI_TEST : MONGO_DB_URI;
+const connection = NODE_ENV === 'test' ? MONGO_DB_URI_TEST : MONGO_DB_URI;
 
 // connection, connect devuelve una promesa.
 mongoose.connect(connection)
-	.then(() => console.log("Database Connected"))
-	.catch(err => console.error(err));
+    .then(() => console.log('Database Connected'))
+    .catch(err => console.error(err));

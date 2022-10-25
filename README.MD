@@ -57,3 +57,7 @@ Podemos ejecutar un unico test por consola, el nombre del test puede contener so
 Las bases de datos deben almacenar una cadena encriptada para evitar filtraciones
 
 `"npm install bcrypt"`
+
+## TDD (Test Driven Development)
+
+Esta estrategia recomienda primero realizar los tests y luego el código.
