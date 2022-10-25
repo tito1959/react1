@@ -4,105 +4,108 @@
  */
 
 require('dotenv').config(); // manejador de .env
-require('./Model/Connection');
 
-const Note = require("./Model/Note");
-const express = require("express");
+require('./Model/Connection');
+const Note = require('./Model/Note');
+const usersRouter = require('./Controller/userController');
+
+const express = require('express');
 const cors = require('cors');
 const app = express();
 
-let notes = [];
-
 // ejecutamos la app:
 app.use(express.json());
-app.use(cors())
+app.use(cors());
 
 // Peticiones HTTP:
-app.get("/", (request, response) => {
-	response.send("<h1>Hello World From Express.js</h1>");
+
+app.use('/api/users', usersRouter);
+
+app.get('/', (request, response) => {
+    response.send('<h1>Hello World From Express.js</h1>');
 });
 
 // Get All -Note.find las llaves indican que devuelva todos los datos.
-app.get("/api/notes", async (request, response) => {
-	const notes = await Note.find({})
-	response.json(notes)
+app.get('/api/notes', async (request, response) => {
+    const notes = await Note.find({});
+    response.json(notes);
 });
 
 // Get ById
-app.get("/api/notes/:id", (request, response, next) => {
-	const id = request.params.id;
+app.get('/api/notes/:id', (request, response, next) => {
+    const id = request.params.id;
 
-	Note.findById(id).then(note => {
-		note ? response.json(note) : response.status(404).end()
-	}).catch(err => {
-		next(err);
-	})
+    Note.findById(id).then(note => {
+        note ? response.json(note) : response.status(404).end();
+    }).catch(err => {
+        next(err);
+    });
 });
 
 // Delete
-app.delete("/api/notes/:id", (request, response, next) => {
-	const id = request.params.id;
+app.delete('/api/notes/:id', (request, response, next) => {
+    const id = request.params.id;
 
-	Note.findByIdAndDelete(id).then(result => {
-		response.status(204).end();
-	}).catch(error => next(error));
+    Note.findByIdAndDelete(id).then(() => {
+        response.status(204).end();
+    }).catch(error => next(error));
 });
 
 // POST (crear recurso)
-app.post("/api/notes", async (request, response) => {
-	// JsonParse para las solicitudes 
-	const note = request.body;
+app.post('/api/notes', async (request, response, next) => {
+    // JsonParse para las solicitudes 
+    const note = request.body;
 
-	if (!note.content) { return response.status(400).json({ error: 'required "content" field is missing' }) }
+    if (!note.content) { return response.status(400).json({ error: 'required "content" field is missing' }); }
 
-	const newNote = new Note({
-		content: note.content,
-		date: new Date().toISOString(),
-		important: typeof note.important !== "undefined" ? note.important : false,
-	});
+    const newNote = new Note({
+        content: note.content,
+        date: new Date().toISOString(),
+        important: typeof note.important !== 'undefined' ? note.important : false,
+    });
 
-	try {
-		const savedNote = await newNote.save();
-		response.json(savedNote);
-	} catch (error) {
-		next(error);
-	}
+    try {
+        const savedNote = await newNote.save();
+        response.json(savedNote);
+    } catch (error) {
+        next(error);
+    }
 
-	// newNote.save().then(saveNote => {
-	// response.json(saveNote)
-	// });
+    // newNote.save().then(saveNote => {
+    // response.json(saveNote)
+    // });
 });
 
-app.put("/api/notes/:id", (request, response) => {
-	const { id } = request.params;
-	const note = request.body;
+app.put('/api/notes/:id', (request, response) => {
+    const { id } = request.params;
+    const note = request.body;
 
-	const newNoteInfo = {
-		content: note.content,
-		important: note.important
-	}
+    const newNoteInfo = {
+        content: note.content,
+        important: note.important
+    };
 
-	Note.findByIdAndUpdate(id, newNoteInfo).then(result => {
-		response.json(result)
-	})
-})
+    Note.findByIdAndUpdate(id, newNoteInfo).then(result => {
+        response.json(result);
+    });
+});
 
 // middleware para error 404
-app.use((request, response, next) => {
-	response.status(404).end();
-})
+app.use((request, response) => {
+    response.status(404).end();
+});
 
 // middleware para capturar error de post
-app.use((error, request, response, next) => {
-	console.log(error);
-	console.log(error.name);
+app.use((error, request, response) => {
+    console.log(error);
+    console.log(error.name);
 
-	if (error.name === "CastError") {
-		response.status(400).send("Error, id is malformed")
-	} else {
-		response.status(500).end()
-	}
-})
+    if (error.name === 'CastError') {
+        response.status(400).send('Error, id is malformed');
+    } else {
+        response.status(500).end();
+    }
+});
 
 /**
  * Propiedades del servidor:

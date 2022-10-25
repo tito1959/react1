@@ -45,7 +45,15 @@ para ejecutar un test:
 `"test": "jest test/notes.test.js",`
 
 Para ejecutar un test y este a la escucha:
+
 `"test:watch": "npm run test -- --watch"`
 
 Podemos ejecutar un unico test por consola, el nombre del test puede contener solo una parte y buscara sus coincidencias:
-`npm run test -- -t "name of test"`
+
+`"npm run test -- -t "name of test"`
+
+## Seguridad a tus contraseñas!
+
+Las bases de datos deben almacenar una cadena encriptada para evitar filtraciones
+
+`"npm install bcrypt"`

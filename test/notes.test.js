@@ -7,12 +7,12 @@
  * 
  * Los test no pueden depender de valores externos, siempre que se ejecuta un test debe dar el mismo resultado para el código.
  */
-const mongoose = require("mongoose");
-const { server } = require("../index");
-const { initialNotes, api } = require("./helpers");
+const mongoose = require('mongoose');
+const { server } = require('../index');
+const { initialNotes, api } = require('./helpers');
 
 // gestion de la bd:
-const Note = require("../Model/Note");
+const Note = require('../Model/Note');
 
 
 // Hook para ejecutar las initialNotes
@@ -36,13 +36,13 @@ beforeEach(async () => {
         await noteObject.save();
     }
 
-})
+});
 
 test('notes are returned as json', async () => {
     await api
         .get('/api/notes')
         .expect(200)
-        .expect("Content-Type", "application/json; charset=utf-8")
+        .expect('Content-Type', 'application/json; charset=utf-8');
 });
 
 test('notes are two notes', async () => {
@@ -62,17 +62,17 @@ test('a valid note can be added', async () => {
     const newNote = {
         content: 'Proximamente async/await',
         important: true
-    }
+    };
 
     await api
         .post('/api/notes')
         .send(newNote)
-        .expect(200)
+        .expect(200);
 
     const response = await api.get('/api/notes');
     const contents = response.body.map(note => note.content);
 
-    expect(response.body).toHaveLength(initialNotes.length + 1)
+    expect(response.body).toHaveLength(initialNotes.length + 1);
     expect(contents).toContain(newNote.content);
 
 });
@@ -80,15 +80,15 @@ test('a valid note can be added', async () => {
 test('note without content is not added', async () => {
     const newNote = {
         important: true
-    }
+    };
 
     await api
         .post('/api/notes')
         .send(newNote)
-        .expect(400)
+        .expect(400);
 
     const response = await api.get('/api/notes');
-    expect(response.body).toHaveLength(initialNotes.length)
+    expect(response.body).toHaveLength(initialNotes.length);
 });
 
 test('a note can be deleted', async () => {
@@ -99,16 +99,15 @@ test('a note can be deleted', async () => {
 
     await api
         .delete(`/api/notes/${noteToDelete._id}`)
-        .expect(204)
+        .expect(204);
 
     const response = await api.get('/api/notes');
     expect(response.body).toHaveLength(initialNotes.length - 1);
     expect(response.body).not.toContain(noteToDelete);
 });
 
-
 // cerrando la conexion con un hook que devuelve un callback
 afterAll(() => {
     mongoose.connection.close();
     server.close();
-})
+});

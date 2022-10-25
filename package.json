@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "test": "jest test/notes.test.js",
+    "test": "jest test/user.test.js --detectOpenHandles",
     "test:watch": "npm run test -- --watch"
   },
   "author": "sebas",
@@ -18,6 +18,7 @@
     "supertest": "^6.3.0"
   },
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "cors": "2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
